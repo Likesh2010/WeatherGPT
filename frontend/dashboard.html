@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>WeatherGPT - Dashboard</title>
+
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/dashboard.css">
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+</head>
+
+<body>
+
+<header class="navbar">
+
+    <div class="logo">
+        <span class="logo-icon">🌤️</span>
+        <span>WeatherGPT</span>
+    </div>
+
+    <nav>
+        <a href="index.html">Home</a>
+        <a href="dashboard.html" class="active">Dashboard</a>
+        <a href="map.html">Weather Map</a>
+    </nav>
+
+</header>
+
+
+<main class="dashboard-container">
+
+
+    <!-- Dashboard Header -->
+
+    <section class="dashboard-header">
+
+        <div>
+
+            <h1 id="locationName">
+                Weather Dashboard
+            </h1>
+
+            <p id="locationDetails">
+                Search for a location to view weather information.
+            </p>
+
+        </div>
+
+        <div class="dashboard-search">
+
+            <input
+                type="text"
+                id="dashboardLocationInput"
+                placeholder="Search location..."
+            >
+
+            <button id="dashboardSearchButton">
+                🔍
+            </button>
+
+        </div>
+
+    </section>
+
+
+    <!-- Loading -->
+
+    <div id="dashboardLoading" class="loading hidden">
+        <div class="spinner"></div>
+        <p>Loading weather data...</p>
+    </div>
+
+
+    <!-- Error -->
+
+    <div id="dashboardError" class="error-message"></div>
+
+
+    <!-- Current Weather -->
+
+    <section class="current-weather-section">
+
+        <div class="weather-main-card">
+
+            <div class="weather-condition">
+
+                <img
+                    id="weatherIcon"
+                    src=""
+                    alt="Weather condition"
+                >
+
+                <div>
+
+                    <h2 id="temperature">
+                        --°C
+                    </h2>
+
+                    <p id="weatherCondition">
+                        --
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <div class="feels-like">
+
+                Feels like
+
+                <strong id="feelsLike">
+                    --°C
+                </strong>
+
+            </div>
+
+        </div>
+
+
+        <!-- Weather Metrics -->
+
+        <div class="weather-metrics">
+
+            <div class="metric-card">
+                <span>💧</span>
+                <p>Humidity</p>
+                <strong id="humidity">--%</strong>
+            </div>
+
+            <div class="metric-card">
+                <span>💨</span>
+                <p>Wind Speed</p>
+                <strong id="windSpeed">-- km/h</strong>
+            </div>
+
+            <div class="metric-card">
+                <span>🧭</span>
+                <p>Wind Direction</p>
+                <strong id="windDirection">--</strong>
+            </div>
+
+            <div class="metric-card">
+                <span>🌡️</span>
+                <p>Pressure</p>
+                <strong id="pressure">-- hPa</strong>
+            </div>
+
+            <div class="metric-card">
+                <span>👁️</span>
+                <p>Visibility</p>
+                <strong id="visibility">-- km</strong>
+            </div>
+
+            <div class="metric-card">
+                <span>☀️</span>
+                <p>UV Index</p>
+                <strong id="uvIndex">--</strong>
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- Weather Details -->
+
+    <section class="info-grid">
+
+        <div class="info-card">
+
+            <h3>🌅 Sunrise</h3>
+
+            <strong id="sunrise">
+                --
+            </strong>
+
+        </div>
+
+        <div class="info-card">
+
+            <h3>🌇 Sunset</h3>
+
+            <strong id="sunset">
+                --
+            </strong>
+
+        </div>
+
+        <div class="info-card">
+
+            <h3>🌧️ Precipitation</h3>
+
+            <strong id="precipitation">
+                -- mm
+            </strong>
+
+        </div>
+
+        <div class="info-card">
+
+            <h3>🕐 Updated</h3>
+
+            <strong id="updatedTime">
+                --
+            </strong>
+
+        </div>
+
+    </section>
+
+
+    <!-- Risk Analysis -->
+
+    <section class="section">
+
+        <div class="section-title">
+
+            <div>
+
+                <h2>⚠️ Weather Risk Analysis</h2>
+
+                <p>
+                    WeatherGPT analysis based on available weather data.
+                </p>
+
+            </div>
+
+            <div
+                id="overallRisk"
+                class="risk-badge risk-low"
+            >
+                LOW
+            </div>
+
+        </div>
+
+
+        <div class="risk-grid">
+
+            <div class="risk-card">
+
+                <h3>🌡️ Heat Risk</h3>
+
+                <div
+                    id="heatRisk"
+                    class="risk-level"
+                >
+                    LOW
+                </div>
+
+                <p id="heatRiskDescription">
+                    No significant heat risk detected.
+                </p>
+
+            </div>
+
+
+            <div class="risk-card">
+
+                <h3>🌧️ Heavy Rain Risk</h3>
+
+                <div
+                    id="rainRisk"
+                    class="risk-level"
+                >
+                    LOW
+                </div>
+
+                <p id="rainRiskDescription">
+                    No significant rainfall risk detected.
+                </p>
+
+            </div>
+
+
+            <div class="risk-card">
+
+                <h3>💨 Wind Risk</h3>
+
+                <div
+                    id="windRisk"
+                    class="risk-level"
+                >
+                    LOW
+                </div>
+
+                <p id="windRiskDescription">
+                    No significant wind risk detected.
+                </p>
+
+            </div>
+
+
+            <div class="risk-card">
+
+                <h3>🌊 Flood Risk</h3>
+
+                <div
+                    id="floodRisk"
+                    class="risk-level"
+                >
+                    UNKNOWN
+                </div>
+
+                <p id="floodRiskDescription">
+                    Insufficient data for flood-risk assessment.
+                </p>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- Alerts -->
+
+    <section class="section">
+
+        <div class="section-title">
+
+            <div>
+
+                <h2>🚨 Weather Alerts</h2>
+
+                <p>
+                    Important weather conditions detected by WeatherGPT.
+                </p>
+
+            </div>
+
+        </div>
+
+        <div id="alertsContainer">
+
+            <div class="no-alerts">
+                No active alerts.
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- Forecast -->
+
+    <section class="section">
+
+        <div class="section-title">
+
+            <div>
+
+                <h2>📅 Forecast</h2>
+
+                <p>
+                    Upcoming weather conditions.
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <div
+            id="forecastContainer"
+            class="forecast-container"
+        >
+
+            <div class="forecast-placeholder">
+                Forecast data will appear here.
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- Charts -->
+
+    <section class="section">
+
+        <div class="section-title">
+
+            <div>
+
+                <h2>📊 Weather Analytics</h2>
+
+                <p>
+                    Visual analysis of forecast conditions.
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <div class="charts-grid">
+
+            <div class="chart-card">
+
+                <h3>Temperature Trend</h3>
+
+                <canvas id="temperatureChart"></canvas>
+
+            </div>
+
+
+            <div class="chart-card">
+
+                <h3>Precipitation</h3>
+
+                <canvas id="rainChart"></canvas>
+
+            </div>
+
+
+            <div class="chart-card">
+
+                <h3>Humidity</h3>
+
+                <canvas id="humidityChart"></canvas>
+
+            </div>
+
+
+            <div class="chart-card">
+
+                <h3>Wind Speed</h3>
+
+                <canvas id="windChart"></canvas>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- Map Preview -->
+
+    <section class="section map-preview">
+
+        <div class="section-title">
+
+            <div>
+
+                <h2>🗺️ Weather Map</h2>
+
+                <p>
+                    Explore the selected location.
+                </p>
+
+            </div>
+
+            <a
+                href="map.html"
+                class="primary-button"
+            >
+                Open Full Map
+            </a>
+
+        </div>
+
+        <div id="dashboardMap"></div>
+
+    </section>
+
+</main>
+
+
+<script src="js/weather.js"></script>
+<script src="js/forecast.js"></script>
+<script src="js/charts.js"></script>
+<script src="js/alerts.js"></script>
+<script src="js/map.js"></script>
+<script src="js/app.js"></script>
+
+</body>
+</html>

@@ -1,0 +1,219 @@
+/* ==============================
+   MAP PAGE
+============================== */
+
+.map-page {
+    max-width: 1400px;
+
+    margin: auto;
+
+    padding: 35px 25px;
+}
+
+
+/* ==============================
+   HEADER
+============================== */
+
+.map-header {
+    display: flex;
+
+    justify-content: space-between;
+
+    align-items: center;
+
+    gap: 20px;
+
+    margin-bottom: 25px;
+}
+
+.map-header h1 {
+    font-size: 32px;
+
+    margin-bottom: 7px;
+}
+
+.map-header p {
+    color: var(--muted);
+}
+
+.map-search {
+    display: flex;
+
+    background: white;
+
+    border: 1px solid var(--border);
+
+    border-radius: 8px;
+
+    overflow: hidden;
+}
+
+.map-search input {
+    width: 250px;
+
+    border: none;
+
+    outline: none;
+
+    padding: 13px;
+}
+
+.map-search button {
+    border: none;
+
+    background: var(--primary);
+
+    color: white;
+
+    padding: 0 18px;
+
+    cursor: pointer;
+}
+
+
+/* ==============================
+   MAP
+============================== */
+
+.map-container {
+    background: white;
+
+    border: 1px solid var(--border);
+
+    border-radius: 15px;
+
+    padding: 8px;
+
+    overflow: hidden;
+}
+
+#weatherMap {
+    height: 600px;
+
+    width: 100%;
+
+    border-radius: 10px;
+}
+
+
+/* ==============================
+   MAP INFO
+============================== */
+
+.map-info-grid {
+    display: grid;
+
+    grid-template-columns:
+        repeat(4, 1fr);
+
+    gap: 15px;
+
+    margin-top: 20px;
+}
+
+.map-info-card {
+    background: white;
+
+    border: 1px solid var(--border);
+
+    border-radius: 12px;
+
+    padding: 20px;
+}
+
+.map-info-card h3 {
+    font-size: 14px;
+
+    color: var(--muted);
+
+    margin-bottom: 8px;
+}
+
+.map-info-card p {
+    font-size: 17px;
+
+    font-weight: 600;
+}
+
+
+/* ==============================
+   LAYERS
+============================== */
+
+.map-layers {
+    margin-top: 30px;
+
+    background: white;
+
+    border: 1px solid var(--border);
+
+    border-radius: 12px;
+
+    padding: 25px;
+}
+
+.map-layers h2 {
+    margin-bottom: 20px;
+}
+
+.layer-options {
+    display: flex;
+
+    gap: 25px;
+
+    flex-wrap: wrap;
+}
+
+.layer-options label {
+    cursor: pointer;
+
+    font-weight: 600;
+}
+
+.layer-options input {
+    margin-right: 7px;
+}
+
+.layer-note {
+    color: var(--muted);
+
+    font-size: 13px;
+
+    margin-top: 15px;
+}
+
+
+/* ==============================
+   RESPONSIVE
+============================== */
+
+@media (max-width: 900px) {
+
+    .map-info-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+}
+
+@media (max-width: 650px) {
+
+    .map-header {
+        flex-direction: column;
+
+        align-items: stretch;
+    }
+
+    .map-search input {
+        width: 100%;
+    }
+
+    #weatherMap {
+        height: 450px;
+    }
+
+    .map-info-grid {
+        grid-template-columns: 1fr;
+    }
+
+}

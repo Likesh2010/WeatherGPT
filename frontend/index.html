@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>WeatherGPT - Intelligent Weather Analysis</title>
+
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+
+    <!-- Navigation -->
+    <header class="navbar">
+        <div class="logo">
+            <span class="logo-icon">🌤️</span>
+            <span>WeatherGPT</span>
+        </div>
+
+        <nav>
+            <a href="index.html" class="active">Home</a>
+            <a href="dashboard.html">Dashboard</a>
+            <a href="map.html">Weather Map</a>
+        </nav>
+    </header>
+
+
+    <!-- Hero Section -->
+    <main class="hero">
+
+        <section class="hero-content">
+
+            <div class="hero-badge">
+                🌦️ Intelligent Weather Intelligence
+            </div>
+
+            <h1>
+                Understand the Weather.
+                <span>Predict the Risk.</span>
+            </h1>
+
+            <p>
+                WeatherGPT combines live weather data, forecasts,
+                visual analytics and weather-risk analysis into one
+                intelligent platform.
+            </p>
+
+
+            <!-- Search -->
+            <div class="search-container">
+
+                <input
+                    type="text"
+                    id="locationInput"
+                    placeholder="Enter city or location..."
+                    autocomplete="off"
+                >
+
+                <button id="searchButton">
+                    🔍 Search
+                </button>
+
+            </div>
+
+
+            <button id="currentLocationButton" class="location-button">
+                📍 Use My Current Location
+            </button>
+
+
+            <!-- Search error -->
+            <div id="searchError" class="error-message"></div>
+
+        </section>
+
+
+        <!-- Feature Cards -->
+        <section class="feature-grid">
+
+            <div class="feature-card">
+                <div class="feature-icon">🌡️</div>
+                <h3>Live Weather</h3>
+                <p>
+                    Get current temperature, humidity,
+                    wind, pressure and other weather conditions.
+                </p>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon">📊</div>
+                <h3>Weather Analytics</h3>
+                <p>
+                    Understand weather trends through
+                    interactive charts and visualizations.
+                </p>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon">⚠️</div>
+                <h3>Risk Analysis</h3>
+                <p>
+                    Analyze heat, rainfall, wind and other
+                    potential weather risks.
+                </p>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon">🗺️</div>
+                <h3>Weather Maps</h3>
+                <p>
+                    Explore weather conditions and locations
+                    using an interactive map.
+                </p>
+            </div>
+
+        </section>
+
+    </main>
+
+
+    <!-- Footer -->
+    <footer>
+        <p>
+            © 2026 WeatherGPT | Intelligent Weather Analysis Platform
+        </p>
+    </footer>
+
+
+    <script src="js/app.js"></script>
+
+</body>
+</html>

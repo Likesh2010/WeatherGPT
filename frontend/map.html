@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>WeatherGPT - Weather Map</title>
+
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/map.css">
+
+    <!-- Leaflet -->
+    <link
+        rel="stylesheet"
+        href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    >
+
+</head>
+
+<body>
+
+<header class="navbar">
+
+    <div class="logo">
+
+        <span class="logo-icon">🌤️</span>
+
+        <span>WeatherGPT</span>
+
+    </div>
+
+    <nav>
+
+        <a href="index.html">Home</a>
+
+        <a href="dashboard.html">
+            Dashboard
+        </a>
+
+        <a href="map.html" class="active">
+            Weather Map
+        </a>
+
+    </nav>
+
+</header>
+
+
+<main class="map-page">
+
+    <section class="map-header">
+
+        <div>
+
+            <h1>🗺️ Weather Map</h1>
+
+            <p>
+                Explore weather conditions by location.
+            </p>
+
+        </div>
+
+
+        <div class="map-search">
+
+            <input
+                type="text"
+                id="mapLocationInput"
+                placeholder="Enter location..."
+            >
+
+            <button id="mapSearchButton">
+                🔍 Search
+            </button>
+
+        </div>
+
+    </section>
+
+
+    <div id="mapError" class="error-message"></div>
+
+
+    <!-- Map -->
+
+    <section class="map-container">
+
+        <div id="weatherMap"></div>
+
+    </section>
+
+
+    <!-- Location Information -->
+
+    <section class="map-info-grid">
+
+        <div class="map-info-card">
+
+            <h3>📍 Location</h3>
+
+            <p id="mapLocation">
+                --
+            </p>
+
+        </div>
+
+
+        <div class="map-info-card">
+
+            <h3>🌐 Coordinates</h3>
+
+            <p id="mapCoordinates">
+                --
+            </p>
+
+        </div>
+
+
+        <div class="map-info-card">
+
+            <h3>🌡️ Temperature</h3>
+
+            <p id="mapTemperature">
+                --°C
+            </p>
+
+        </div>
+
+
+        <div class="map-info-card">
+
+            <h3>☁️ Condition</h3>
+
+            <p id="mapCondition">
+                --
+            </p>
+
+        </div>
+
+    </section>
+
+
+    <!-- Map Layers -->
+
+    <section class="map-layers">
+
+        <h2>Weather Layers</h2>
+
+        <div class="layer-options">
+
+            <label>
+                <input
+                    type="checkbox"
+                    id="rainLayer"
+                >
+                🌧️ Rainfall
+            </label>
+
+            <label>
+                <input
+                    type="checkbox"
+                    id="temperatureLayer"
+                >
+                🌡️ Temperature
+            </label>
+
+            <label>
+                <input
+                    type="checkbox"
+                    id="windLayer"
+                >
+                💨 Wind
+            </label>
+
+        </div>
+
+        <p class="layer-note">
+            Weather layers are enabled only when supported
+            by the configured weather provider.
+        </p>
+
+    </section>
+
+</main>
+
+
+<script
+    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js">
+</script>
+
+<script src="js/map.js"></script>
+<script src="js/app.js"></script>
+
+</body>
+</html>
