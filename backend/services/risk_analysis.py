@@ -199,7 +199,7 @@ class RiskAnalysisService:
             }
 
 
-        if wind_speed >= 60:
+        if wind_speed >= 35:
 
             return {
 
@@ -213,7 +213,7 @@ class RiskAnalysisService:
             }
 
 
-        if wind_speed >= 40:
+        if wind_speed >= 20:
 
             return {
 

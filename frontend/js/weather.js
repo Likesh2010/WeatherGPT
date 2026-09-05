@@ -1,231 +1,150 @@
-/* =================================
-   Weather Data
-================================= */
+/* =========================================================
+   WeatherGPT Current Weather
+========================================================= */
 
 
-async function fetchCurrentWeather(location) {
+/* =========================================================
+   Weather Icon
+========================================================= */
 
-    let url;
+function setWeatherIcon(element, icon, condition) {
 
-
-    if (
-        location.latitude !== undefined &&
-        location.longitude !== undefined
-    ) {
-
-        url =
-            `${API_BASE_URL}/weather/current?latitude=${location.latitude}&longitude=${location.longitude}`;
-
-    } else {
-
-        url =
-            `${API_BASE_URL}/weather/current?location=${encodeURIComponent(location.location)}`;
-
-    }
-
-
-    const response =
-        await fetch(url);
-
-
-    if (!response.ok) {
-
-        throw new Error(
-            "Failed to retrieve current weather."
-        );
-
-    }
-
-
-    const result =
-        await response.json();
-
-
-    if (!result.success) {
-
-        throw new Error(
-            result.error?.message ||
-            "Weather data unavailable."
-        );
-
-    }
-
-
-    return result.data;
-
-}
-
-
-/* =================================
-   Update Current Weather UI
-================================= */
-
-function updateCurrentWeather(data) {
-
-    if (!data) {
+    if (!element) {
         return;
     }
 
+    /*
+     * The backend returns an emoji for the weather icon.
+     * We use textContent instead of <img src="">
+     * so emojis never become broken image URLs.
+     */
 
-    const setText =
-        (id, value) => {
+    const iconValue =
+        icon ||
+        getWeatherEmoji(condition);
 
-            const element =
-                document.getElementById(id);
+    element.textContent = iconValue;
 
-            if (element) {
-                element.textContent =
-                    value ?? "--";
-            }
-
-        };
-
-
-    setText(
-        "locationName",
-        data.location || "Unknown Location"
+    element.setAttribute(
+        "aria-label",
+        condition || "Weather condition"
     );
-
-
-    setText(
-        "locationDetails",
-
-        data.latitude !== undefined &&
-        data.longitude !== undefined
-
-            ? `Latitude: ${data.latitude} | Longitude: ${data.longitude}`
-
-            : ""
-    );
-
-
-    setText(
-        "temperature",
-
-        data.temperature !== undefined
-            ? `${Math.round(data.temperature)}°C`
-            : "--°C"
-    );
-
-
-    setText(
-        "feelsLike",
-
-        data.feels_like !== undefined
-            ? `${Math.round(data.feels_like)}°C`
-            : "--°C"
-    );
-
-
-    setText(
-        "weatherCondition",
-        data.condition || "--"
-    );
-
-
-    setText(
-        "humidity",
-
-        data.humidity !== undefined
-            ? `${data.humidity}%`
-            : "--%"
-    );
-
-
-    setText(
-        "windSpeed",
-
-        data.wind_speed !== undefined
-            ? `${data.wind_speed} km/h`
-            : "-- km/h"
-    );
-
-
-    setText(
-        "windDirection",
-
-        data.wind_direction !== undefined
-            ? `${data.wind_direction}°`
-            : "--"
-    );
-
-
-    setText(
-        "pressure",
-
-        data.pressure !== undefined
-            ? `${data.pressure} hPa`
-            : "-- hPa"
-    );
-
-
-    setText(
-        "visibility",
-
-        data.visibility !== undefined
-            ? `${data.visibility} km`
-            : "-- km"
-    );
-
-
-    setText(
-        "uvIndex",
-
-        data.uv !== undefined
-            ? data.uv
-            : "--"
-    );
-
-
-    setText(
-        "precipitation",
-
-        data.precipitation !== undefined
-            ? `${data.precipitation} mm`
-            : "-- mm"
-    );
-
-
-    setText(
-        "sunrise",
-        formatTime(data.sunrise)
-    );
-
-
-    setText(
-        "sunset",
-        formatTime(data.sunset)
-    );
-
-
-    setText(
-        "updatedTime",
-        formatTime(data.timestamp)
-    );
-
-
-    const icon =
-        document.getElementById(
-            "weatherIcon"
-        );
-
-
-    if (icon && data.icon) {
-
-        icon.src = data.icon;
-
-        icon.alt =
-            data.condition ||
-            "Weather";
-
-    }
-
 }
 
 
-/* =================================
-   Time Formatter
-================================= */
+/* =========================================================
+   Weather Emoji Fallback
+========================================================= */
+
+function getWeatherEmoji(condition) {
+
+    const text =
+        String(condition || "")
+            .toLowerCase();
+
+    if (
+        text.includes("thunder")
+    ) {
+        return "⛈️";
+    }
+
+    if (
+        text.includes("rain") ||
+        text.includes("drizzle")
+    ) {
+        return "🌧️";
+    }
+
+    if (
+        text.includes("snow")
+    ) {
+        return "❄️";
+    }
+
+    if (
+        text.includes("fog") ||
+        text.includes("mist")
+    ) {
+        return "🌫️";
+    }
+
+    if (
+        text.includes("cloud")
+    ) {
+        return "☁️";
+    }
+
+    if (
+        text.includes("partly")
+    ) {
+        return "⛅";
+    }
+
+    if (
+        text.includes("clear") ||
+        text.includes("sun")
+    ) {
+        return "☀️";
+    }
+
+    return "🌤️";
+}
+
+
+/* =========================================================
+   Format Number
+========================================================= */
+
+function formatNumber(value, decimals = 1) {
+
+    if (
+        value === null ||
+        value === undefined ||
+        value === "" ||
+        Number.isNaN(Number(value))
+    ) {
+        return "--";
+    }
+
+    return Number(value).toFixed(decimals);
+}
+
+
+/* =========================================================
+   Format Visibility
+========================================================= */
+
+function formatVisibility(value) {
+
+    if (
+        value === null ||
+        value === undefined ||
+        value === ""
+    ) {
+        return "--";
+    }
+
+    const numericValue = Number(value);
+
+    if (Number.isNaN(numericValue)) {
+        return String(value);
+    }
+
+    /*
+     * Open-Meteo visibility is returned in metres.
+     * Convert metres -> kilometres.
+     */
+
+    const kilometers =
+        numericValue / 1000;
+
+    return kilometers.toFixed(2);
+}
+
+
+/* =========================================================
+   Format Time
+========================================================= */
 
 function formatTime(value) {
 
@@ -233,15 +152,11 @@ function formatTime(value) {
         return "--";
     }
 
-
-    const date =
-        new Date(value);
-
+    const date = new Date(value);
 
     if (Number.isNaN(date.getTime())) {
-        return value;
+        return String(value);
     }
-
 
     return date.toLocaleTimeString(
         [],
@@ -254,12 +169,497 @@ function formatTime(value) {
 }
 
 
-/* =================================
-   Dashboard Loader
-================================= */
+/* =========================================================
+   Format Location
+========================================================= */
 
-async function loadWeatherDashboard(
-    locationData = null
+function formatLocationName(data) {
+
+    const location =
+        data?.location;
+
+    /*
+     * If the backend has a proper location name,
+     * use it.
+     */
+
+    if (
+        location &&
+        typeof location === "string" &&
+        !location.includes(",")
+    ) {
+        return location;
+    }
+
+    /*
+     * If location is already a useful string,
+     * use it.
+     */
+
+    if (
+        location &&
+        typeof location === "string" &&
+        location.length < 60
+    ) {
+        return location;
+    }
+
+    /*
+     * Otherwise display a friendly fallback.
+     */
+
+    return "Current Location";
+}
+
+
+/* =========================================================
+   Update Weather UI
+========================================================= */
+
+function updateWeatherUI(weather) {
+
+    if (!weather) {
+        return;
+    }
+
+
+    /* -------------------------
+       Location
+    ------------------------- */
+
+    const locationName =
+        document.getElementById(
+            "locationName"
+        );
+
+    const locationDetails =
+        document.getElementById(
+            "locationDetails"
+        );
+
+
+    if (locationName) {
+
+        locationName.textContent =
+            formatLocationName(weather);
+
+    }
+
+
+    if (locationDetails) {
+
+        const latitude =
+            Number(weather.latitude);
+
+        const longitude =
+            Number(weather.longitude);
+
+        if (
+            !Number.isNaN(latitude) &&
+            !Number.isNaN(longitude)
+        ) {
+
+            locationDetails.textContent =
+                `${latitude.toFixed(4)}° N • ` +
+                `${longitude.toFixed(4)}° E`;
+
+        } else {
+
+            locationDetails.textContent =
+                "Live weather conditions";
+
+        }
+
+    }
+
+
+    /* -------------------------
+       Weather Icon
+    ------------------------- */
+
+    const weatherIcon =
+        document.getElementById(
+            "weatherIcon"
+        );
+
+    setWeatherIcon(
+        weatherIcon,
+        weather.icon,
+        weather.condition
+    );
+
+
+    /* -------------------------
+       Temperature
+    ------------------------- */
+
+    const temperature =
+        document.getElementById(
+            "temperature"
+        );
+
+    if (temperature) {
+
+        temperature.textContent =
+            `${formatNumber(weather.temperature, 0)}°C`;
+
+    }
+
+
+    /* -------------------------
+       Condition
+    ------------------------- */
+
+    const condition =
+        document.getElementById(
+            "weatherCondition"
+        );
+
+    if (condition) {
+
+        condition.textContent =
+            weather.condition || "--";
+
+    }
+
+
+    /* -------------------------
+       Feels Like
+    ------------------------- */
+
+    const feelsLike =
+        document.getElementById(
+            "feelsLike"
+        );
+
+    if (feelsLike) {
+
+        feelsLike.textContent =
+            `${formatNumber(weather.feels_like, 0)}°C`;
+
+    }
+
+
+    /* -------------------------
+       Humidity
+    ------------------------- */
+
+    const humidity =
+        document.getElementById(
+            "humidity"
+        );
+
+    if (humidity) {
+
+        humidity.textContent =
+            `${formatNumber(weather.humidity, 0)}%`;
+
+    }
+
+
+    /* -------------------------
+       Wind Speed
+    ------------------------- */
+
+    const windSpeed =
+        document.getElementById(
+            "windSpeed"
+        );
+
+    if (windSpeed) {
+
+        windSpeed.textContent =
+            `${formatNumber(weather.wind_speed, 1)} km/h`;
+
+    }
+
+
+    /* -------------------------
+       Wind Direction
+    ------------------------- */
+
+    const windDirection =
+        document.getElementById(
+            "windDirection"
+        );
+
+    if (windDirection) {
+
+        windDirection.textContent =
+            `${formatNumber(weather.wind_direction, 0)}°`;
+
+    }
+
+
+    /* -------------------------
+       Pressure
+    ------------------------- */
+
+    const pressure =
+        document.getElementById(
+            "pressure"
+        );
+
+    if (pressure) {
+
+        pressure.textContent =
+            `${formatNumber(weather.pressure, 1)} hPa`;
+
+    }
+
+
+    /* -------------------------
+       Visibility
+    ------------------------- */
+
+    const visibility =
+        document.getElementById(
+            "visibility"
+        );
+
+    if (visibility) {
+
+        visibility.textContent =
+            `${formatVisibility(weather.visibility)} km`;
+
+    }
+
+
+    /* -------------------------
+       UV Index
+    ------------------------- */
+
+    const uvIndex =
+        document.getElementById(
+            "uvIndex"
+        );
+
+    if (uvIndex) {
+
+        uvIndex.textContent =
+            formatNumber(weather.uv, 1);
+
+    }
+
+
+    /* -------------------------
+       Sunrise
+    ------------------------- */
+
+    const sunrise =
+        document.getElementById(
+            "sunrise"
+        );
+
+    if (sunrise) {
+
+        sunrise.textContent =
+            formatTime(weather.sunrise);
+
+    }
+
+
+    /* -------------------------
+       Sunset
+    ------------------------- */
+
+    const sunset =
+        document.getElementById(
+            "sunset"
+        );
+
+    if (sunset) {
+
+        sunset.textContent =
+            formatTime(weather.sunset);
+
+    }
+
+
+    /* -------------------------
+       Precipitation
+    ------------------------- */
+
+    const precipitation =
+        document.getElementById(
+            "precipitation"
+        );
+
+    if (precipitation) {
+
+        precipitation.textContent =
+            `${formatNumber(
+                weather.precipitation,
+                1
+            )} mm`;
+
+    }
+
+
+    /* -------------------------
+       Updated Time
+    ------------------------- */
+
+    const updatedTime =
+        document.getElementById(
+            "updatedTime"
+        );
+
+    if (updatedTime) {
+
+        updatedTime.textContent =
+            formatTime(
+                weather.timestamp
+            );
+
+    }
+
+
+    /* -------------------------
+       Risk
+    ------------------------- */
+
+    if (weather.risk) {
+
+        updateRiskUI(
+            weather.risk
+        );
+
+    }
+
+}
+
+
+/* =========================================================
+   Update Risk UI
+========================================================= */
+
+function updateRiskUI(risk) {
+
+    if (!risk) {
+        return;
+    }
+
+    updateRiskElement(
+        "overallRisk",
+        risk.overall
+    );
+
+    updateRiskElement(
+        "heatRisk",
+        risk.heat
+    );
+
+    updateRiskElement(
+        "rainRisk",
+        risk.rain
+    );
+
+    updateRiskElement(
+        "windRisk",
+        risk.wind
+    );
+
+    updateRiskElement(
+        "floodRisk",
+        risk.flood
+    );
+
+    updateRiskDescription(
+        "heatRiskDescription",
+        risk.heat
+    );
+
+    updateRiskDescription(
+        "rainRiskDescription",
+        risk.rain
+    );
+
+    updateRiskDescription(
+        "windRiskDescription",
+        risk.wind
+    );
+
+    updateRiskDescription(
+        "floodRiskDescription",
+        risk.flood
+    );
+
+}
+
+
+/* =========================================================
+   Risk Element
+========================================================= */
+
+function updateRiskElement(
+    elementId,
+    riskData
+) {
+
+    const element =
+        document.getElementById(
+            elementId
+        );
+
+    if (!element || !riskData) {
+        return;
+    }
+
+    const level =
+        String(
+            riskData.level ||
+            "UNKNOWN"
+        ).toUpperCase();
+
+    element.textContent = level;
+
+    element.classList.remove(
+        "risk-low",
+        "risk-moderate",
+        "risk-high",
+        "risk-extreme",
+        "risk-unknown"
+    );
+
+    element.classList.add(
+        `risk-${level.toLowerCase()}`
+    );
+
+}
+
+
+/* =========================================================
+   Risk Description
+========================================================= */
+
+function updateRiskDescription(
+    elementId,
+    riskData
+) {
+
+    const element =
+        document.getElementById(
+            elementId
+        );
+
+    if (!element || !riskData) {
+        return;
+    }
+
+    element.textContent =
+        riskData.description ||
+        "No significant risk detected.";
+
+}
+
+
+/* =========================================================
+   Fetch Current Weather
+========================================================= */
+
+async function loadCurrentWeather(
+    params = {}
 ) {
 
     const loading =
@@ -273,121 +673,262 @@ async function loadWeatherDashboard(
         );
 
 
+    if (loading) {
+        loading.classList.remove("hidden");
+    }
+
+    if (error) {
+        error.textContent = "";
+    }
+
+
     try {
 
-        hideElement(error);
-
-        showElement(loading);
+        let query = "";
 
 
-        const location =
-            locationData ||
-            getSavedLocation();
+        if (params.location) {
 
+            query =
+                `?location=${encodeURIComponent(
+                    params.location
+                )}`;
 
-        if (!location) {
+        }
+
+        else if (
+            params.latitude !== undefined &&
+            params.longitude !== undefined
+        ) {
+
+            query =
+                `?latitude=${encodeURIComponent(
+                    params.latitude
+                )}&longitude=${encodeURIComponent(
+                    params.longitude
+                )}`;
+
+        }
+
+        else {
 
             throw new Error(
-                "Please search for a location first."
+                "No location provided."
+            );
+
+        }
+
+
+        const response =
+            await fetch(
+                `/api/weather/current${query}`
+            );
+
+
+        const result =
+            await response.json();
+
+
+        if (!response.ok || !result.success) {
+
+            throw new Error(
+                result?.error?.message ||
+                "Unable to load weather data."
             );
 
         }
 
 
         const weather =
-            await fetchCurrentWeather(
-                location
-            );
+            result.data;
 
 
-        updateCurrentWeather(
+        updateWeatherUI(
             weather
         );
 
 
+        /*
+         * Store location for other dashboard components.
+         */
+
         if (
-            typeof loadForecast ===
-            "function"
+            weather.latitude !== undefined &&
+            weather.longitude !== undefined
         ) {
 
-            loadForecast(
-                weather
+            localStorage.setItem(
+                "weatherLatitude",
+                weather.latitude
             );
 
+            localStorage.setItem(
+                "weatherLongitude",
+                weather.longitude
+            );
+        }
+
+        if (weather.location) {
+            localStorage.setItem(
+                "weatherLocation",
+                JSON.stringify({
+                    location: weather.location,
+                    latitude: weather.latitude,
+                    longitude: weather.longitude
+                })
+            );
+
+            localStorage.setItem(
+                "weatherGPTLocation",
+                JSON.stringify({
+                    location: weather.location,
+                    latitude: weather.latitude,
+                    longitude: weather.longitude
+                })
+            );
         }
 
 
-        if (
-            typeof loadAlerts ===
-            "function"
-        ) {
-
-            loadAlerts(
-                weather
-            );
-
-        }
+        return weather;
 
 
-        if (
-            typeof loadRiskAnalysis ===
-            "function"
-        ) {
+    }
 
-            loadRiskAnalysis(
-                weather
-            );
+    catch (errorObject) {
 
-        }
-
-
-        if (
-            typeof initializeWeatherMap ===
-            "function"
-        ) {
-
-            initializeWeatherMap(
-                weather.latitude,
-                weather.longitude,
-                weather
-            );
-
-        }
-
-
-    } catch (err) {
-
-        showError(
-            error,
-            err.message
+        console.error(
+            "Weather loading error:",
+            errorObject
         );
 
-    } finally {
 
-        hideElement(loading);
+        if (error) {
+
+            error.textContent =
+                errorObject.message ||
+                "Unable to load weather data.";
+
+        }
+
+        throw errorObject;
+
+
+    }
+
+    finally {
+
+        if (loading) {
+            loading.classList.add("hidden");
+        }
 
     }
 
 }
 
 
-/* =================================
-   Dashboard Initialization
-================================= */
+/* =========================================================
+   Dashboard Initial Load
+========================================================= */
+
+async function initializeDashboard() {
+
+    try {
+
+        const savedLocation =
+            localStorage.getItem(
+                "weatherLocation"
+            );
+
+        const savedLatitude =
+            localStorage.getItem(
+                "weatherLatitude"
+            );
+
+        const savedLongitude =
+            localStorage.getItem(
+                "weatherLongitude"
+            );
+
+
+        if (savedLocation) {
+
+            const parsedLocation =
+                savedLocation.startsWith("{")
+                    ? JSON.parse(savedLocation)
+                    : { location: savedLocation };
+
+            await loadCurrentWeather(parsedLocation);
+            if (typeof loadForecast === "function") {
+                await loadForecast(parsedLocation);
+            }
+            if (typeof loadAlerts === "function") {
+                await loadAlerts(parsedLocation);
+            }
+            return;
+
+        }
+
+
+        if (
+            savedLatitude &&
+            savedLongitude
+        ) {
+
+            const params = {
+                latitude: savedLatitude,
+                longitude: savedLongitude
+            };
+
+            await loadCurrentWeather(params);
+            if (typeof loadForecast === "function") {
+                await loadForecast(params);
+            }
+            if (typeof loadAlerts === "function") {
+                await loadAlerts(params);
+            }
+            return;
+
+        }
+
+
+        /*
+         * Default location for development.
+         */
+
+        const defaultLocation = { location: "Chennai" };
+
+        await loadCurrentWeather(defaultLocation);
+        if (typeof loadForecast === "function") {
+            await loadForecast(defaultLocation);
+        }
+        if (typeof loadAlerts === "function") {
+            await loadAlerts(defaultLocation);
+        }
+
+
+    }
+
+    catch (error) {
+
+        console.error(
+            "Dashboard initialization failed:",
+            error
+        );
+
+    }
+
+}
+
+
+/* =========================================================
+   Start Dashboard
+========================================================= */
 
 document.addEventListener(
     "DOMContentLoaded",
     () => {
 
-        if (
-            document.getElementById(
-                "temperature"
-            )
-        ) {
-
-            loadWeatherDashboard();
-
-        }
+        initializeDashboard();
 
     }
 );

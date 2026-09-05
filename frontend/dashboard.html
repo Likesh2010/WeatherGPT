@@ -14,7 +14,14 @@
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
+    <!-- Leaflet -->
+    <link
+        rel="stylesheet"
+        href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    >
+
 </head>
+
 
 <body>
 
@@ -37,11 +44,17 @@
 <main class="dashboard-container">
 
 
-    <!-- Dashboard Header -->
+    <!-- =========================
+         DASHBOARD HEADER
+    ========================== -->
 
     <section class="dashboard-header">
 
-        <div>
+        <div class="location-heading">
+
+            <div class="location-label">
+                CURRENT WEATHER
+            </div>
 
             <h1 id="locationName">
                 Weather Dashboard
@@ -53,15 +66,20 @@
 
         </div>
 
+
         <div class="dashboard-search">
 
             <input
                 type="text"
                 id="dashboardLocationInput"
-                placeholder="Search location..."
+                placeholder="Search city or location..."
+                autocomplete="off"
             >
 
-            <button id="dashboardSearchButton">
+            <button
+                id="dashboardSearchButton"
+                aria-label="Search"
+            >
                 🔍
             </button>
 
@@ -70,40 +88,65 @@
     </section>
 
 
-    <!-- Loading -->
+    <!-- =========================
+         LOADING
+    ========================== -->
 
-    <div id="dashboardLoading" class="loading hidden">
+    <div
+        id="dashboardLoading"
+        class="loading hidden"
+    >
         <div class="spinner"></div>
-        <p>Loading weather data...</p>
+        <p>Analyzing weather conditions...</p>
     </div>
 
 
-    <!-- Error -->
+    <!-- =========================
+         ERROR
+    ========================== -->
 
-    <div id="dashboardError" class="error-message"></div>
+    <div
+        id="dashboardError"
+        class="error-message"
+    ></div>
 
 
-    <!-- Current Weather -->
+    <!-- =========================
+         CURRENT WEATHER
+    ========================== -->
 
     <section class="current-weather-section">
 
+
+        <!-- Main Weather -->
+
         <div class="weather-main-card">
 
-            <div class="weather-condition">
+            <div class="weather-main-top">
 
-                <img
+                <div
                     id="weatherIcon"
-                    src=""
-                    alt="Weather condition"
+                    class="weather-icon-large"
+                    aria-label="Weather condition"
                 >
+                    ☀️
+                </div>
 
-                <div>
 
-                    <h2 id="temperature">
-                        --°C
-                    </h2>
+                <div class="weather-main-info">
 
-                    <p id="weatherCondition">
+                    <div class="temperature-row">
+
+                        <h2 id="temperature">
+                            --°C
+                        </h2>
+
+                    </div>
+
+                    <p
+                        id="weatherCondition"
+                        class="weather-condition-text"
+                    >
                         --
                     </p>
 
@@ -122,6 +165,17 @@
 
             </div>
 
+
+            <div class="weather-status">
+
+                <span class="status-dot"></span>
+
+                <span>
+                    Live weather data
+                </span>
+
+            </div>
+
         </div>
 
 
@@ -129,40 +183,118 @@
 
         <div class="weather-metrics">
 
-            <div class="metric-card">
-                <span>💧</span>
-                <p>Humidity</p>
-                <strong id="humidity">--%</strong>
-            </div>
 
             <div class="metric-card">
-                <span>💨</span>
-                <p>Wind Speed</p>
-                <strong id="windSpeed">-- km/h</strong>
+
+                <div class="metric-icon">
+                    💧
+                </div>
+
+                <div class="metric-content">
+
+                    <p>Humidity</p>
+
+                    <strong id="humidity">
+                        --%
+                    </strong>
+
+                </div>
+
             </div>
 
-            <div class="metric-card">
-                <span>🧭</span>
-                <p>Wind Direction</p>
-                <strong id="windDirection">--</strong>
-            </div>
 
             <div class="metric-card">
-                <span>🌡️</span>
-                <p>Pressure</p>
-                <strong id="pressure">-- hPa</strong>
+
+                <div class="metric-icon">
+                    💨
+                </div>
+
+                <div class="metric-content">
+
+                    <p>Wind Speed</p>
+
+                    <strong id="windSpeed">
+                        -- km/h
+                    </strong>
+
+                </div>
+
             </div>
 
-            <div class="metric-card">
-                <span>👁️</span>
-                <p>Visibility</p>
-                <strong id="visibility">-- km</strong>
-            </div>
 
             <div class="metric-card">
-                <span>☀️</span>
-                <p>UV Index</p>
-                <strong id="uvIndex">--</strong>
+
+                <div class="metric-icon">
+                    🧭
+                </div>
+
+                <div class="metric-content">
+
+                    <p>Wind Direction</p>
+
+                    <strong id="windDirection">
+                        --
+                    </strong>
+
+                </div>
+
+            </div>
+
+
+            <div class="metric-card">
+
+                <div class="metric-icon">
+                    🌡️
+                </div>
+
+                <div class="metric-content">
+
+                    <p>Pressure</p>
+
+                    <strong id="pressure">
+                        -- hPa
+                    </strong>
+
+                </div>
+
+            </div>
+
+
+            <div class="metric-card">
+
+                <div class="metric-icon">
+                    👁️
+                </div>
+
+                <div class="metric-content">
+
+                    <p>Visibility</p>
+
+                    <strong id="visibility">
+                        -- km
+                    </strong>
+
+                </div>
+
+            </div>
+
+
+            <div class="metric-card">
+
+                <div class="metric-icon">
+                    ☀️
+                </div>
+
+                <div class="metric-content">
+
+                    <p>UV Index</p>
+
+                    <strong id="uvIndex">
+                        --
+                    </strong>
+
+                </div>
+
             </div>
 
         </div>
@@ -170,68 +302,116 @@
     </section>
 
 
-    <!-- Weather Details -->
+    <!-- =========================
+         WEATHER DETAILS
+    ========================== -->
 
     <section class="info-grid">
 
+
         <div class="info-card">
 
-            <h3>🌅 Sunrise</h3>
+            <div class="info-icon">
+                🌅
+            </div>
 
-            <strong id="sunrise">
-                --
-            </strong>
+            <div>
+
+                <h3>Sunrise</h3>
+
+                <strong id="sunrise">
+                    --
+                </strong>
+
+            </div>
 
         </div>
 
+
         <div class="info-card">
 
-            <h3>🌇 Sunset</h3>
+            <div class="info-icon">
+                🌇
+            </div>
 
-            <strong id="sunset">
-                --
-            </strong>
+            <div>
+
+                <h3>Sunset</h3>
+
+                <strong id="sunset">
+                    --
+                </strong>
+
+            </div>
 
         </div>
 
+
         <div class="info-card">
 
-            <h3>🌧️ Precipitation</h3>
+            <div class="info-icon">
+                🌧️
+            </div>
 
-            <strong id="precipitation">
-                -- mm
-            </strong>
+            <div>
+
+                <h3>Precipitation</h3>
+
+                <strong id="precipitation">
+                    -- mm
+                </strong>
+
+            </div>
 
         </div>
 
+
         <div class="info-card">
 
-            <h3>🕐 Updated</h3>
+            <div class="info-icon">
+                🕐
+            </div>
 
-            <strong id="updatedTime">
-                --
-            </strong>
+            <div>
+
+                <h3>Last Updated</h3>
+
+                <strong id="updatedTime">
+                    --
+                </strong>
+
+            </div>
 
         </div>
 
     </section>
 
 
-    <!-- Risk Analysis -->
+    <!-- =========================
+         RISK ANALYSIS
+    ========================== -->
 
-    <section class="section">
+    <section class="section risk-section">
+
 
         <div class="section-title">
 
             <div>
 
-                <h2>⚠️ Weather Risk Analysis</h2>
+                <span class="section-eyebrow">
+                    INTELLIGENT ANALYSIS
+                </span>
+
+                <h2>
+                    ⚠️ Weather Risk Analysis
+                </h2>
 
                 <p>
-                    WeatherGPT analysis based on available weather data.
+                    WeatherGPT analyzes multiple weather factors to identify potential risks.
                 </p>
 
             </div>
+
 
             <div
                 id="overallRisk"
@@ -245,15 +425,28 @@
 
         <div class="risk-grid">
 
+
             <div class="risk-card">
 
-                <h3>🌡️ Heat Risk</h3>
+                <div class="risk-card-header">
 
-                <div
-                    id="heatRisk"
-                    class="risk-level"
-                >
-                    LOW
+                    <span class="risk-card-icon">
+                        🌡️
+                    </span>
+
+                    <div>
+
+                        <h3>Heat Risk</h3>
+
+                        <span
+                            id="heatRisk"
+                            class="risk-level risk-low"
+                        >
+                            LOW
+                        </span>
+
+                    </div>
+
                 </div>
 
                 <p id="heatRiskDescription">
@@ -265,13 +458,25 @@
 
             <div class="risk-card">
 
-                <h3>🌧️ Heavy Rain Risk</h3>
+                <div class="risk-card-header">
 
-                <div
-                    id="rainRisk"
-                    class="risk-level"
-                >
-                    LOW
+                    <span class="risk-card-icon">
+                        🌧️
+                    </span>
+
+                    <div>
+
+                        <h3>Heavy Rain Risk</h3>
+
+                        <span
+                            id="rainRisk"
+                            class="risk-level risk-low"
+                        >
+                            LOW
+                        </span>
+
+                    </div>
+
                 </div>
 
                 <p id="rainRiskDescription">
@@ -283,13 +488,25 @@
 
             <div class="risk-card">
 
-                <h3>💨 Wind Risk</h3>
+                <div class="risk-card-header">
 
-                <div
-                    id="windRisk"
-                    class="risk-level"
-                >
-                    LOW
+                    <span class="risk-card-icon">
+                        💨
+                    </span>
+
+                    <div>
+
+                        <h3>Wind Risk</h3>
+
+                        <span
+                            id="windRisk"
+                            class="risk-level risk-low"
+                        >
+                            LOW
+                        </span>
+
+                    </div>
+
                 </div>
 
                 <p id="windRiskDescription">
@@ -301,13 +518,25 @@
 
             <div class="risk-card">
 
-                <h3>🌊 Flood Risk</h3>
+                <div class="risk-card-header">
 
-                <div
-                    id="floodRisk"
-                    class="risk-level"
-                >
-                    UNKNOWN
+                    <span class="risk-card-icon">
+                        🌊
+                    </span>
+
+                    <div>
+
+                        <h3>Flood Risk</h3>
+
+                        <span
+                            id="floodRisk"
+                            class="risk-level risk-unknown"
+                        >
+                            UNKNOWN
+                        </span>
+
+                    </div>
+
                 </div>
 
                 <p id="floodRiskDescription">
@@ -321,28 +550,38 @@
     </section>
 
 
-    <!-- Alerts -->
+    <!-- =========================
+         ALERTS
+    ========================== -->
 
     <section class="section">
+
 
         <div class="section-title">
 
             <div>
 
-                <h2>🚨 Weather Alerts</h2>
+                <span class="section-eyebrow">
+                    WEATHER NOTIFICATIONS
+                </span>
+
+                <h2>
+                    🚨 Weather Alerts
+                </h2>
 
                 <p>
-                    Important weather conditions detected by WeatherGPT.
+                    Important conditions detected by WeatherGPT.
                 </p>
 
             </div>
 
         </div>
 
+
         <div id="alertsContainer">
 
             <div class="no-alerts">
-                No active alerts.
+                ✓ No active weather alerts.
             </div>
 
         </div>
@@ -350,18 +589,27 @@
     </section>
 
 
-    <!-- Forecast -->
+    <!-- =========================
+         FORECAST
+    ========================== -->
 
     <section class="section">
+
 
         <div class="section-title">
 
             <div>
 
-                <h2>📅 Forecast</h2>
+                <span class="section-eyebrow">
+                    UPCOMING CONDITIONS
+                </span>
+
+                <h2>
+                    📅 Weather Forecast
+                </h2>
 
                 <p>
-                    Upcoming weather conditions.
+                    Expected weather conditions for the coming days.
                 </p>
 
             </div>
@@ -383,18 +631,27 @@
     </section>
 
 
-    <!-- Charts -->
+    <!-- =========================
+         ANALYTICS
+    ========================== -->
 
     <section class="section">
+
 
         <div class="section-title">
 
             <div>
 
-                <h2>📊 Weather Analytics</h2>
+                <span class="section-eyebrow">
+                    DATA VISUALIZATION
+                </span>
+
+                <h2>
+                    📊 Weather Analytics
+                </h2>
 
                 <p>
-                    Visual analysis of forecast conditions.
+                    Visual trends from available forecast data.
                 </p>
 
             </div>
@@ -404,38 +661,87 @@
 
         <div class="charts-grid">
 
+
             <div class="chart-card">
 
-                <h3>Temperature Trend</h3>
+                <div class="chart-header">
 
-                <canvas id="temperatureChart"></canvas>
+                    <div>
+
+                        <h3>🌡️ Temperature Trend</h3>
+
+                        <p>Temperature variation</p>
+
+                    </div>
+
+                </div>
+
+                <div class="chart-container">
+                    <canvas id="temperatureChart"></canvas>
+                </div>
 
             </div>
 
 
             <div class="chart-card">
 
-                <h3>Precipitation</h3>
+                <div class="chart-header">
 
-                <canvas id="rainChart"></canvas>
+                    <div>
+
+                        <h3>🌧️ Precipitation</h3>
+
+                        <p>Expected rainfall</p>
+
+                    </div>
+
+                </div>
+
+                <div class="chart-container">
+                    <canvas id="rainChart"></canvas>
+                </div>
 
             </div>
 
 
             <div class="chart-card">
 
-                <h3>Humidity</h3>
+                <div class="chart-header">
 
-                <canvas id="humidityChart"></canvas>
+                    <div>
+
+                        <h3>💧 Humidity</h3>
+
+                        <p>Humidity variation</p>
+
+                    </div>
+
+                </div>
+
+                <div class="chart-container">
+                    <canvas id="humidityChart"></canvas>
+                </div>
 
             </div>
 
 
             <div class="chart-card">
 
-                <h3>Wind Speed</h3>
+                <div class="chart-header">
 
-                <canvas id="windChart"></canvas>
+                    <div>
+
+                        <h3>💨 Wind Speed</h3>
+
+                        <p>Wind speed variation</p>
+
+                    </div>
+
+                </div>
+
+                <div class="chart-container">
+                    <canvas id="windChart"></canvas>
+                </div>
 
             </div>
 
@@ -444,37 +750,51 @@
     </section>
 
 
-    <!-- Map Preview -->
+    <!-- =========================
+         MAP
+    ========================== -->
 
     <section class="section map-preview">
+
 
         <div class="section-title">
 
             <div>
 
-                <h2>🗺️ Weather Map</h2>
+                <span class="section-eyebrow">
+                    LOCATION VISUALIZATION
+                </span>
+
+                <h2>
+                    🗺️ Weather Map
+                </h2>
 
                 <p>
-                    Explore the selected location.
+                    Explore the selected weather location.
                 </p>
 
             </div>
+
 
             <a
                 href="map.html"
                 class="primary-button"
             >
-                Open Full Map
+                Open Full Map →
             </a>
 
         </div>
+
 
         <div id="dashboardMap"></div>
 
     </section>
 
-</main>
 
+</main>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 <script src="js/weather.js"></script>
 <script src="js/forecast.js"></script>
@@ -482,6 +802,6 @@
 <script src="js/alerts.js"></script>
 <script src="js/map.js"></script>
 <script src="js/app.js"></script>
-
 </body>
+
 </html>

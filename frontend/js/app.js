@@ -47,9 +47,16 @@ function saveLocation(location) {
         return;
     }
 
+    const normalized = JSON.stringify(location);
+
     localStorage.setItem(
         "weatherGPTLocation",
-        JSON.stringify(location)
+        normalized
+    );
+
+    localStorage.setItem(
+        "weatherLocation",
+        normalized
     );
 }
 
@@ -63,7 +70,8 @@ function getSavedLocation() {
     try {
 
         const saved =
-            localStorage.getItem("weatherGPTLocation");
+            localStorage.getItem("weatherGPTLocation") ||
+            localStorage.getItem("weatherLocation");
 
         return saved
             ? JSON.parse(saved)
@@ -93,6 +101,40 @@ function openDashboard(location) {
         "dashboard.html";
 }
 
+function refreshDashboardAfterSearch(data) {
+    if (!data) {
+        return;
+    }
+
+    const locationPayload = {
+        location: data.location,
+        latitude: data.latitude,
+        longitude: data.longitude
+    };
+
+    if (typeof loadCurrentWeather === "function") {
+        loadCurrentWeather({
+            location: data.location,
+            latitude: data.latitude,
+            longitude: data.longitude
+        }).catch((error) => {
+            console.error("Dashboard refresh failed:", error);
+        });
+    }
+
+    if (typeof loadForecast === "function") {
+        loadForecast(locationPayload).catch((error) => {
+            console.error("Forecast refresh failed:", error);
+        });
+    }
+
+    if (typeof loadAlerts === "function") {
+        loadAlerts(locationPayload).catch((error) => {
+            console.error("Alerts refresh failed:", error);
+        });
+    }
+}
+
 
 /* =================================
    Search Location
@@ -100,7 +142,9 @@ function openDashboard(location) {
 
 async function searchLocation(location) {
 
-    if (!location || !location.trim()) {
+    const sanitizedLocation = String(location || "").trim();
+
+    if (!sanitizedLocation) {
 
         throw new Error(
             "Please enter a location."
@@ -108,7 +152,7 @@ async function searchLocation(location) {
     }
 
     const response = await fetch(
-        `${API_BASE_URL}/weather/current?location=${encodeURIComponent(location)}`
+        `${API_BASE_URL}/weather/current?location=${encodeURIComponent(sanitizedLocation)}`
     );
 
     if (!response.ok) {
@@ -182,11 +226,15 @@ function initializeHomePage() {
                         input.value
                     );
 
-                openDashboard({
+                const locationPayload = {
                     location: data.location,
                     latitude: data.latitude,
                     longitude: data.longitude
-                });
+                };
+
+                saveLocation(locationPayload);
+
+                openDashboard(locationPayload);
 
             } catch (err) {
 
@@ -306,28 +354,14 @@ function initializeDashboardSearch() {
                         input.value
                     );
 
-                saveLocation({
-
+                const locationPayload = {
                     location: data.location,
+                    latitude: data.latitude,
+                    longitude: data.longitude
+                };
 
-                    latitude:
-                        data.latitude,
-
-                    longitude:
-                        data.longitude
-
-                });
-
-                if (
-                    typeof loadWeatherDashboard ===
-                    "function"
-                ) {
-
-                    loadWeatherDashboard(
-                        data
-                    );
-
-                }
+                saveLocation(locationPayload);
+                refreshDashboardAfterSearch(locationPayload);
 
             } catch (error) {
 
@@ -352,9 +386,8 @@ function initializeDashboardSearch() {
         event => {
 
             if (event.key === "Enter") {
-
+                event.preventDefault();
                 button.click();
-
             }
 
         }

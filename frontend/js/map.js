@@ -1,234 +1,389 @@
-/* =================================
-   WeatherGPT Map
-================================= */
+// ============================================================
+// WeatherGPT - Weather Map
+// ============================================================
 
 let weatherMap = null;
-
 let weatherMarker = null;
 
 
-/* =================================
-   Initialize Map
-================================= */
+// ============================================================
+// INITIALIZE MAP
+// ============================================================
 
-function initializeWeatherMap(
-    latitude,
-    longitude,
-    weather = null
-) {
+function initializeWeatherMap() {
 
-    const mapElement =
-        document.getElementById(
-            "weatherMap"
-        ) ||
-        document.getElementById(
-            "dashboardMap"
-        );
-
+    const mapElement = document.getElementById("weatherMap");
 
     if (!mapElement) {
+        console.warn("weatherMap element not found.");
         return;
     }
 
+    // Prevent duplicate initialization
+    if (weatherMap) {
+        return;
+    }
 
-    if (
-        latitude === undefined ||
-        longitude === undefined
-    ) {
+    // Default location: Chennai
+    const defaultLatitude = 13.0827;
+    const defaultLongitude = 80.2707;
+
+    weatherMap = L.map("weatherMap").setView(
+        [defaultLatitude, defaultLongitude],
+        10
+    );
+
+    // OpenStreetMap tiles
+    L.tileLayer(
+        "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+        {
+            attribution:
+                '&copy; <a href="https://www.openstreetmap.org/">' +
+                'OpenStreetMap</a> contributors',
+
+            maxZoom: 19
+        }
+    ).addTo(weatherMap);
+
+    // Default marker
+    weatherMarker = L.marker([
+        defaultLatitude,
+        defaultLongitude
+    ]).addTo(weatherMap);
+
+    weatherMarker.bindPopup(
+        "WeatherGPT<br>Chennai"
+    );
+
+    // Fix Leaflet rendering issues
+    setTimeout(() => {
+        weatherMap.invalidateSize();
+    }, 300);
+}
+
+
+// ============================================================
+// SEARCH LOCATION
+// ============================================================
+
+async function searchMapLocation() {
+
+    const input = document.getElementById(
+        "mapLocationInput"
+    );
+
+    const errorElement = document.getElementById(
+        "mapError"
+    );
+
+    if (!input) {
+        return;
+    }
+
+    const location = input.value.trim();
+
+    // Clear previous error
+    if (errorElement) {
+        errorElement.textContent = "";
+        errorElement.style.display = "none";
+    }
+
+    // Validate input
+    if (!location) {
+
+        showMapError(
+            "Please enter a city or location."
+        );
 
         return;
+    }
+
+    // Show loading state
+    const searchButton = document.getElementById(
+        "mapSearchButton"
+    );
+
+    if (searchButton) {
+
+        searchButton.disabled = true;
+        searchButton.textContent = "Searching...";
+    }
+
+    try {
+
+        const url =
+            `/api/weather/map?location=${encodeURIComponent(location)}`;
+
+        const response = await fetch(url);
+
+        const result = await response.json();
+
+        console.log("Map API response:", result);
+
+        // API failure
+        if (!response.ok || !result.success) {
+
+            const message =
+                result?.error?.message ||
+                "Unable to find weather information.";
+
+            throw new Error(message);
+        }
+
+        const weather = result.data;
+
+        if (
+            weather.latitude === undefined ||
+            weather.longitude === undefined
+        ) {
+
+            throw new Error(
+                "Location coordinates were not returned."
+            );
+        }
+
+        // Update map
+        updateWeatherMap(weather);
+
+        // Update information panel
+        updateMapWeatherInfo(weather);
 
     }
 
-
-    if (typeof L === "undefined") {
+    catch (error) {
 
         console.error(
-            "Leaflet is not loaded."
+            "Map search error:",
+            error
+        );
+
+        showMapError(
+            error.message ||
+            "Unable to find weather information."
+        );
+    }
+
+    finally {
+
+        if (searchButton) {
+
+            searchButton.disabled = false;
+            searchButton.textContent = "Search";
+        }
+    }
+}
+
+
+// ============================================================
+// UPDATE MAP
+// ============================================================
+
+function updateWeatherMap(weather) {
+
+    if (!weatherMap) {
+        initializeWeatherMap();
+    }
+
+    if (!weatherMap) {
+        return;
+    }
+
+    const latitude = Number(
+        weather.latitude
+    );
+
+    const longitude = Number(
+        weather.longitude
+    );
+
+    if (
+        !Number.isFinite(latitude) ||
+        !Number.isFinite(longitude)
+    ) {
+
+        showMapError(
+            "Invalid coordinates received from server."
         );
 
         return;
-
     }
 
+    // Move map
+    weatherMap.setView(
+        [latitude, longitude],
+        10,
+        {
+            animate: true
+        }
+    );
 
-    /* ------------------------------
-       Create Map
-    ------------------------------ */
-
-    if (!weatherMap) {
-
-        weatherMap =
-            L.map(
-                mapElement
-            ).setView(
-                [
-                    latitude,
-                    longitude
-                ],
-                10
-            );
-
-
-        L.tileLayer(
-
-            "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-
-            {
-
-                attribution:
-                    "&copy; OpenStreetMap contributors"
-
-            }
-
-        ).addTo(
-            weatherMap
-        );
-
-    } else {
-
-        weatherMap.setView(
-            [
-                latitude,
-                longitude
-            ],
-            10
-        );
-
-    }
-
-
-    /* ------------------------------
-       Marker
-    ------------------------------ */
-
+    // Remove old marker
     if (weatherMarker) {
 
         weatherMap.removeLayer(
             weatherMarker
         );
-
     }
 
-
-    weatherMarker =
-        L.marker(
-            [
-                latitude,
-                longitude
-            ]
-        ).addTo(
-            weatherMap
-        );
-
-
-    let popup =
-        "Selected Location";
-
-
-    if (weather) {
-
-        popup = `
-
-            <strong>
-                ${weather.location || "Location"}
-            </strong>
-
-            <br>
-
-            Temperature:
-            ${weather.temperature ?? "--"}°C
-
-            <br>
-
-            Condition:
-            ${weather.condition || "--"}
-
-        `;
-
-    }
-
-
-    weatherMarker.bindPopup(
-        popup
-    );
-
-
-    weatherMarker.openPopup();
-
-
-    /* ------------------------------
-       Update Map Information
-    ------------------------------ */
-
-    updateMapInformation(
-        weather,
+    // Create new marker
+    weatherMarker = L.marker([
         latitude,
         longitude
-    );
+    ]).addTo(weatherMap);
 
-}
+    // Build popup
+    const locationName =
+        weather.location ||
+        "Selected Location";
 
-
-/* =================================
-   Update Map Info
-================================= */
-
-function updateMapInformation(
-    weather,
-    latitude,
-    longitude
-) {
-
-    const setText =
-        (id, value) => {
-
-            const element =
-                document.getElementById(id);
-
-            if (element) {
-
-                element.textContent =
-                    value ?? "--";
-
-            }
-
-        };
-
-
-    setText(
-        "mapLocation",
-        weather?.location || "--"
-    );
-
-
-    setText(
-        "mapCoordinates",
-        `${latitude}, ${longitude}`
-    );
-
-
-    setText(
-        "mapTemperature",
-        weather?.temperature !== undefined
+    const temperature =
+        weather.temperature !== undefined
             ? `${weather.temperature}°C`
-            : "--°C"
-    );
+            : "N/A";
 
+    const condition =
+        weather.condition ||
+        "Unknown";
 
-    setText(
-        "mapCondition",
-        weather?.condition || "--"
-    );
+    const humidity =
+        weather.humidity !== undefined
+            ? `${weather.humidity}%`
+            : "N/A";
 
+    const wind =
+        weather.wind_speed !== undefined
+            ? `${weather.wind_speed} km/h`
+            : "N/A";
+
+    const popupHTML = `
+        <div class="map-popup">
+            <strong>${escapeHTML(locationName)}</strong>
+
+            <br><br>
+
+            🌡️ Temperature:
+            ${escapeHTML(String(temperature))}
+
+            <br>
+
+            ☁️ Condition:
+            ${escapeHTML(String(condition))}
+
+            <br>
+
+            💧 Humidity:
+            ${escapeHTML(String(humidity))}
+
+            <br>
+
+            💨 Wind:
+            ${escapeHTML(String(wind))}
+        </div>
+    `;
+
+    weatherMarker
+        .bindPopup(popupHTML)
+        .openPopup();
+
+    // Fix map size
+    setTimeout(() => {
+
+        weatherMap.invalidateSize();
+
+    }, 300);
 }
 
 
-/* =================================
-   Map Page Search
-================================= */
+// ============================================================
+// UPDATE WEATHER INFORMATION
+// ============================================================
 
-async function initializeMapPage() {
+function updateMapWeatherInfo(weather) {
+
+    const locationElement =
+        document.getElementById(
+            "mapLocation"
+        );
+
+    const coordinatesElement =
+        document.getElementById(
+            "mapCoordinates"
+        );
+
+    const temperatureElement =
+        document.getElementById(
+            "mapTemperature"
+        );
+
+    const conditionElement =
+        document.getElementById(
+            "mapCondition"
+        );
+
+    if (locationElement) {
+
+        locationElement.textContent =
+            weather.location ||
+            "Selected Location";
+    }
+
+    if (coordinatesElement) {
+
+        const latitude =
+            Number(weather.latitude).toFixed(4);
+
+        const longitude =
+            Number(weather.longitude).toFixed(4);
+
+        coordinatesElement.textContent =
+            `${latitude}, ${longitude}`;
+    }
+
+    if (temperatureElement) {
+
+        temperatureElement.textContent =
+            weather.temperature !== undefined
+                ? `${weather.temperature}°C`
+                : "--";
+    }
+
+    if (conditionElement) {
+
+        conditionElement.textContent =
+            weather.condition ||
+            "Unknown";
+    }
+}
+
+
+// ============================================================
+// SHOW ERROR
+// ============================================================
+
+function showMapError(message) {
+
+    const errorElement =
+        document.getElementById(
+            "mapError"
+        );
+
+    if (!errorElement) {
+        return;
+    }
+
+    errorElement.textContent =
+        message;
+
+    errorElement.style.display =
+        "block";
+}
+
+
+// ============================================================
+// ENTER KEY SEARCH
+// ============================================================
+
+function setupMapSearch() {
 
     const input =
         document.getElementById(
@@ -240,119 +395,57 @@ async function initializeMapPage() {
             "mapSearchButton"
         );
 
+    if (button) {
 
-    if (!input || !button) {
-        return;
+        button.addEventListener(
+            "click",
+            searchMapLocation
+        );
     }
 
+    if (input) {
 
-    const saved =
-        getSavedLocation();
+        input.addEventListener(
+            "keydown",
+            function (event) {
 
+                if (event.key === "Enter") {
 
-    if (saved) {
+                    event.preventDefault();
 
-        try {
-
-            const weather =
-                await fetchCurrentWeather(
-                    saved
-                );
-
-
-            initializeWeatherMap(
-                weather.latitude,
-                weather.longitude,
-                weather
-            );
-
-        } catch (error) {
-
-            console.error(
-                error
-            );
-
-        }
-
-    }
-
-
-    button.addEventListener(
-        "click",
-        async () => {
-
-            const errorElement =
-                document.getElementById(
-                    "mapError"
-                );
-
-
-            clearError(
-                errorElement
-            );
-
-
-            try {
-
-                const weather =
-                    await searchLocation(
-                        input.value
-                    );
-
-
-                saveLocation({
-
-                    location:
-                        weather.location,
-
-                    latitude:
-                        weather.latitude,
-
-                    longitude:
-                        weather.longitude
-
-                });
-
-
-                initializeWeatherMap(
-                    weather.latitude,
-                    weather.longitude,
-                    weather
-                );
-
-
-            } catch (error) {
-
-                showError(
-                    errorElement,
-                    error.message
-                );
-
+                    searchMapLocation();
+                }
             }
-
-        }
-    );
-
+        );
+    }
 }
 
 
-/* =================================
-   Map Page Initialization
-================================= */
+// ============================================================
+// HTML ESCAPE
+// ============================================================
+
+function escapeHTML(value) {
+
+    return String(value)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+}
+
+
+// ============================================================
+// INITIALIZATION
+// ============================================================
 
 document.addEventListener(
     "DOMContentLoaded",
-    () => {
+    function () {
 
-        if (
-            document.getElementById(
-                "weatherMap"
-            )
-        ) {
+        initializeWeatherMap();
 
-            initializeMapPage();
-
-        }
-
+        setupMapSearch();
     }
 );

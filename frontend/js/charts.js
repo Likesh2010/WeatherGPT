@@ -1,6 +1,6 @@
-/* =================================
-   Weather Charts
-================================= */
+/* =========================================================
+   WeatherGPT Charts
+========================================================= */
 
 let temperatureChart = null;
 let rainChart = null;
@@ -8,37 +8,153 @@ let humidityChart = null;
 let windChart = null;
 
 
-/* =================================
-   Extract Hourly Data
-================================= */
+/* =========================================================
+   Get Forecast Data
+========================================================= */
 
-function getHourlyData(data) {
+function getChartData(data) {
 
-    return data.hourly ||
-           data.forecast ||
-           [];
+    if (!data) {
+        return [];
+    }
 
+    if (Array.isArray(data)) {
+        return data;
+    }
+
+    if (Array.isArray(data.hourly)) {
+        return data.hourly;
+    }
+
+    if (Array.isArray(data.forecast)) {
+        return data.forecast;
+    }
+
+    if (data.data) {
+        if (Array.isArray(data.data)) {
+            return data.data;
+        }
+
+        if (Array.isArray(data.data.hourly)) {
+            return data.data.hourly;
+        }
+
+        if (Array.isArray(data.data.forecast)) {
+            return data.data.forecast;
+        }
+    }
+
+    return [];
 }
 
 
-/* =================================
-   Destroy Existing Chart
-================================= */
+/* =========================================================
+   Get Value From Multiple Possible Names
+========================================================= */
+
+function getValue(item, keys) {
+
+    for (const key of keys) {
+
+        if (
+            item &&
+            item[key] !== undefined &&
+            item[key] !== null
+        ) {
+            return item[key];
+        }
+
+    }
+
+    return null;
+}
+
+
+/* =========================================================
+   Format Chart Time
+========================================================= */
+
+function formatChartTime(value) {
+
+    if (!value) {
+        return "--";
+    }
+
+    const date = new Date(value);
+
+    if (Number.isNaN(date.getTime())) {
+        return String(value);
+    }
+
+    return date.toLocaleTimeString(
+        [],
+        {
+            hour: "numeric",
+            minute: "2-digit"
+        }
+    );
+}
+
+
+/* =========================================================
+   Destroy Chart
+========================================================= */
 
 function destroyChart(chart) {
 
     if (chart) {
-
         chart.destroy();
-
     }
 
 }
 
 
-/* =================================
+/* =========================================================
+   Common Chart Options
+========================================================= */
+
+function getCommonOptions() {
+
+    return {
+
+        responsive: true,
+
+        maintainAspectRatio: false,
+
+        animation: {
+            duration: 500
+        },
+
+        plugins: {
+
+            legend: {
+                display: true,
+
+                position: "top",
+
+                labels: {
+                    boxWidth: 10,
+
+                    usePointStyle: true
+                }
+            }
+
+        },
+
+        interaction: {
+            intersect: false,
+
+            mode: "index"
+        }
+
+    };
+
+}
+
+
+/* =========================================================
    Temperature Chart
-================================= */
+========================================================= */
 
 function createTemperatureChart(data) {
 
@@ -47,75 +163,82 @@ function createTemperatureChart(data) {
             "temperatureChart"
         );
 
-
-    if (!canvas) {
+    if (!canvas || typeof Chart === "undefined") {
         return;
     }
 
+    const items = getChartData(data);
 
-    const hourly =
-        getHourlyData(data);
-
-
-    const labels =
-        hourly.map(
-            item =>
-                formatChartTime(
-                    item.timestamp ||
-                    item.date
-                )
-        );
-
-
-    const values =
-        hourly.map(
-            item =>
-                item.temperature ?? null
-        );
-
-
-    destroyChart(
-        temperatureChart
+    const labels = items.map(
+        item =>
+            formatChartTime(
+                getValue(item, [
+                    "timestamp",
+                    "time",
+                    "date"
+                ])
+            )
     );
 
+    const values = items.map(
+        item =>
+            getValue(item, [
+                "temperature",
+                "temperature_2m",
+                "temp"
+            ])
+    );
 
-    temperatureChart =
-        new Chart(
-            canvas,
-            {
-                type: "line",
+    destroyChart(temperatureChart);
 
-                data: {
+    temperatureChart = new Chart(
+        canvas,
+        {
+            type: "line",
 
-                    labels: labels,
+            data: {
 
-                    datasets: [
+                labels: labels,
 
-                        {
-                            label:
-                                "Temperature (°C)",
+                datasets: [
 
-                            data: values,
+                    {
+                        label: "Temperature (°C)",
 
-                            tension: 0.35,
+                        data: values,
 
-                            fill: true
+                        tension: 0.35,
+
+                        fill: true,
+
+                        pointRadius: 2,
+
+                        pointHoverRadius: 5
+                    }
+
+                ]
+
+            },
+
+            options: {
+
+                ...getCommonOptions(),
+
+                scales: {
+
+                    x: {
+                        grid: {
+                            display: false
                         }
+                    },
 
-                    ]
+                    y: {
 
-                },
+                        beginAtZero: false,
 
-                options: {
-
-                    responsive: true,
-
-                    maintainAspectRatio: false,
-
-                    scales: {
-
-                        y: {
-                            beginAtZero: false
+                        title: {
+                            display: true,
+                            text: "°C"
                         }
 
                     }
@@ -123,14 +246,16 @@ function createTemperatureChart(data) {
                 }
 
             }
-        );
+
+        }
+    );
 
 }
 
 
-/* =================================
+/* =========================================================
    Rain Chart
-================================= */
+========================================================= */
 
 function createRainChart(data) {
 
@@ -139,79 +264,93 @@ function createRainChart(data) {
             "rainChart"
         );
 
-
-    if (!canvas) {
+    if (!canvas || typeof Chart === "undefined") {
         return;
     }
 
+    const items = getChartData(data);
 
-    const hourly =
-        getHourlyData(data);
-
-
-    const labels =
-        hourly.map(
-            item =>
-                formatChartTime(
-                    item.timestamp ||
-                    item.date
-                )
-        );
-
-
-    const values =
-        hourly.map(
-            item =>
-                item.precipitation ?? 0
-        );
-
-
-    destroyChart(
-        rainChart
+    const labels = items.map(
+        item =>
+            formatChartTime(
+                getValue(item, [
+                    "timestamp",
+                    "time",
+                    "date"
+                ])
+            )
     );
 
+    const values = items.map(
+        item =>
+            getValue(item, [
+                "precipitation",
+                "precipitation_sum",
+                "rain"
+            ]) ?? 0
+    );
 
-    rainChart =
-        new Chart(
-            canvas,
-            {
-                type: "bar",
+    destroyChart(rainChart);
 
-                data: {
+    rainChart = new Chart(
+        canvas,
+        {
+            type: "bar",
 
-                    labels: labels,
+            data: {
 
-                    datasets: [
+                labels: labels,
 
-                        {
-                            label:
-                                "Precipitation (mm)",
+                datasets: [
 
-                            data: values
+                    {
+                        label: "Precipitation (mm)",
 
+                        data: values,
+
+                        borderRadius: 5
+                    }
+
+                ]
+
+            },
+
+            options: {
+
+                ...getCommonOptions(),
+
+                scales: {
+
+                    x: {
+                        grid: {
+                            display: false
+                        }
+                    },
+
+                    y: {
+
+                        beginAtZero: true,
+
+                        title: {
+                            display: true,
+                            text: "mm"
                         }
 
-                    ]
-
-                },
-
-                options: {
-
-                    responsive: true,
-
-                    maintainAspectRatio: false
+                    }
 
                 }
 
             }
-        );
+
+        }
+    );
 
 }
 
 
-/* =================================
+/* =========================================================
    Humidity Chart
-================================= */
+========================================================= */
 
 function createHumidityChart(data) {
 
@@ -220,77 +359,82 @@ function createHumidityChart(data) {
             "humidityChart"
         );
 
-
-    if (!canvas) {
+    if (!canvas || typeof Chart === "undefined") {
         return;
     }
 
+    const items = getChartData(data);
 
-    const hourly =
-        getHourlyData(data);
-
-
-    const labels =
-        hourly.map(
-            item =>
-                formatChartTime(
-                    item.timestamp ||
-                    item.date
-                )
-        );
-
-
-    const values =
-        hourly.map(
-            item =>
-                item.humidity ?? null
-        );
-
-
-    destroyChart(
-        humidityChart
+    const labels = items.map(
+        item =>
+            formatChartTime(
+                getValue(item, [
+                    "timestamp",
+                    "time",
+                    "date"
+                ])
+            )
     );
 
+    const values = items.map(
+        item =>
+            getValue(item, [
+                "humidity",
+                "relative_humidity",
+                "relative_humidity_2m"
+            ])
+    );
 
-    humidityChart =
-        new Chart(
-            canvas,
-            {
-                type: "line",
+    destroyChart(humidityChart);
 
-                data: {
+    humidityChart = new Chart(
+        canvas,
+        {
+            type: "line",
 
-                    labels: labels,
+            data: {
 
-                    datasets: [
+                labels: labels,
 
-                        {
-                            label:
-                                "Humidity (%)",
+                datasets: [
 
-                            data: values,
+                    {
+                        label: "Humidity (%)",
 
-                            tension: 0.35
+                        data: values,
+
+                        tension: 0.35,
+
+                        pointRadius: 2,
+
+                        pointHoverRadius: 5
+                    }
+
+                ]
+
+            },
+
+            options: {
+
+                ...getCommonOptions(),
+
+                scales: {
+
+                    x: {
+                        grid: {
+                            display: false
                         }
+                    },
 
-                    ]
+                    y: {
 
-                },
+                        min: 0,
 
-                options: {
+                        max: 100,
 
-                    responsive: true,
-
-                    maintainAspectRatio: false,
-
-                    scales: {
-
-                        y: {
-
-                            min: 0,
-
-                            max: 100
-
+                        title: {
+                            display: true,
+                            text: "%"
                         }
 
                     }
@@ -298,14 +442,16 @@ function createHumidityChart(data) {
                 }
 
             }
-        );
+
+        }
+    );
 
 }
 
 
-/* =================================
+/* =========================================================
    Wind Chart
-================================= */
+========================================================= */
 
 function createWindChart(data) {
 
@@ -314,85 +460,99 @@ function createWindChart(data) {
             "windChart"
         );
 
-
-    if (!canvas) {
+    if (!canvas || typeof Chart === "undefined") {
         return;
     }
 
+    const items = getChartData(data);
 
-    const hourly =
-        getHourlyData(data);
-
-
-    const labels =
-        hourly.map(
-            item =>
-                formatChartTime(
-                    item.timestamp ||
-                    item.date
-                )
-        );
-
-
-    const values =
-        hourly.map(
-            item =>
-                item.wind_speed ?? null
-        );
-
-
-    destroyChart(
-        windChart
+    const labels = items.map(
+        item =>
+            formatChartTime(
+                getValue(item, [
+                    "timestamp",
+                    "time",
+                    "date"
+                ])
+            )
     );
 
+    const values = items.map(
+        item =>
+            getValue(item, [
+                "wind_speed",
+                "wind_speed_10m",
+                "wind"
+            ])
+    );
 
-    windChart =
-        new Chart(
-            canvas,
-            {
-                type: "line",
+    destroyChart(windChart);
 
-                data: {
+    windChart = new Chart(
+        canvas,
+        {
+            type: "line",
 
-                    labels: labels,
+            data: {
 
-                    datasets: [
+                labels: labels,
 
-                        {
-                            label:
-                                "Wind Speed (km/h)",
+                datasets: [
 
-                            data: values,
+                    {
+                        label: "Wind Speed (km/h)",
 
-                            tension: 0.35
+                        data: values,
+
+                        tension: 0.35,
+
+                        pointRadius: 2,
+
+                        pointHoverRadius: 5
+                    }
+
+                ]
+
+            },
+
+            options: {
+
+                ...getCommonOptions(),
+
+                scales: {
+
+                    x: {
+                        grid: {
+                            display: false
+                        }
+                    },
+
+                    y: {
+
+                        beginAtZero: true,
+
+                        title: {
+                            display: true,
+                            text: "km/h"
                         }
 
-                    ]
-
-                },
-
-                options: {
-
-                    responsive: true,
-
-                    maintainAspectRatio: false
+                    }
 
                 }
 
             }
 
-        );
+        }
+    );
 
 }
 
 
-/* =================================
+/* =========================================================
    Update All Charts
-================================= */
+========================================================= */
 
-function updateWeatherCharts(
-    data
-) {
+function updateWeatherCharts(data) {
 
     createTemperatureChart(data);
 
@@ -401,35 +561,5 @@ function updateWeatherCharts(
     createHumidityChart(data);
 
     createWindChart(data);
-
-}
-
-
-/* =================================
-   Time Formatter
-================================= */
-
-function formatChartTime(value) {
-
-    if (!value) {
-        return "--";
-    }
-
-
-    const date =
-        new Date(value);
-
-
-    if (Number.isNaN(date.getTime())) {
-        return value;
-    }
-
-
-    return date.toLocaleTimeString(
-        [],
-        {
-            hour: "2-digit"
-        }
-    );
 
 }
